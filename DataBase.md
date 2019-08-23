@@ -9,6 +9,7 @@
 | status | int | 任务状态，0-未开始，1-开始但未结束，2-结束,默认0|
 | estimatedDuration| INTEGER | 预计时长， 单位分钟,not null|
 | realDuration| INTEGER | 实际时长，可以为空|
+| startTime| INTEGER | 任务开始时间，可以为null|
 | createTime| INTEGER| 任务创建时间，时间戳，不为空|
 
 
