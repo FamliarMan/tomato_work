@@ -1,38 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.jianglei.tomato_work">
 
-    <!-- io.flutter.app.FlutterApplication is an android.app.Application that
-         calls FlutterMain.startInitialization(this); in its onCreate method.
-         In most cases you can leave this as-is, but you if you want to provide
-         additional functionality it is fine to subclass or reimplement
-         FlutterApplication and put your custom class here. -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <application
         android:name=".TomatoApplication"
-        android:label="tomato_work"
         android:icon="@mipmap/ic_launcher"
+        android:label="tomato_work"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name=".ScreenLockActivity"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.jianglei.tomato_work.lockscreen"
+            android:theme="@style/TranslucentFullScreenTheme"
+            />
 
-        <service android:name=".TickService"/>
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+
             android:windowSoftInputMode="adjustResize">
-            <!-- This keeps the window background of the activity showing
+
+            <!--
+                 This keeps the window background of the activity showing
                  until Flutter renders its first frame. It can be removed if
                  there is no splash screen (such as the default splash screen
-                 defined in @style/LaunchTheme). -->
+                 defined in @style/LaunchTheme).
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
             <meta-data
                 android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
                 android:value="true" />
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
 
+        <service android:name=".TickService" />
     </application>
+
 </manifest>

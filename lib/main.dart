@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tomato_work/data/db.dart';
 import 'package:provider/provider.dart';
 import 'package:tomato_work/page/history_page.dart';
+import 'package:tomato_work/page/screen_lock_page.dart';
 import 'package:tomato_work/page/setting_page.dart';
 import 'package:tomato_work/page/statistics_page.dart';
 import 'package:tomato_work/page/to_do_page.dart';
@@ -37,6 +38,9 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
           ),
           home: MyHomePage(title: '番茄'),
+          routes: <String, WidgetBuilder>{
+            "/screen_lock": (context) => ScreenLockPage()
+          },
         ));
   }
 }
@@ -62,7 +66,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _curIndex = 0;
   var _pageController = PageController(initialPage: 0);
-
 
   void onPageSelect(int index) {
     _pageController.animateToPage(index,

@@ -21,6 +21,9 @@ class ToDoState extends State<ToDoPage> with AutomaticKeepAliveClientMixin {
   TimeCounterController _timeCounterController = TimeCounterController(
     tomatoDuration: 1,
     restDuration: 1,
+    onWorkStartCallback: (){
+
+    }
   );
 
   bool _hasQuery = false;
@@ -109,6 +112,10 @@ class ToDoState extends State<ToDoPage> with AutomaticKeepAliveClientMixin {
       dataCenter.updatePresentTasks(tasks);
     });
   }
+
+  void add
+
+  void
 
   @override
   bool get wantKeepAlive => true;

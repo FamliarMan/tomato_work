@@ -4,7 +4,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -24,6 +27,7 @@ public class TickService extends Service {
     private List<TickProvider.OnTickListener> onTickListeners = new ArrayList<>();
     private List<TickProvider.OnStatusChangeListener> onStatusChangeListeners = new ArrayList<>();
     private int notificationId = 100;
+    private BroadcastReceiver screenLockReceiver;
 
     @androidx.annotation.Nullable
     @Override
@@ -31,6 +35,26 @@ public class TickService extends Service {
         return binder;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        screenLockReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    // TODO: 19-8-29  暂时不启用锁屏界面
+//                    Intent lockScreen = new Intent(TickService.this, ScreenLockActivity.class);
+//                    lockScreen.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                    startActivity(lockScreen);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(screenLockReceiver, filter);
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -144,11 +168,11 @@ public class TickService extends Service {
         onTickListeners.remove(onTickListener);
     }
 
-    public void addStatusChangeListener(TickProvider.OnStatusChangeListener listener){
+    public void addStatusChangeListener(TickProvider.OnStatusChangeListener listener) {
         onStatusChangeListeners.add(listener);
     }
 
-    public void removeStatusChangeListener(TickProvider.OnStatusChangeListener listener){
+    public void removeStatusChangeListener(TickProvider.OnStatusChangeListener listener) {
         onStatusChangeListeners.remove(listener);
     }
 
@@ -172,5 +196,6 @@ public class TickService extends Service {
     public void onDestroy() {
         super.onDestroy();
         tickProvider.cancel();
+        unregisterReceiver(screenLockReceiver);
     }
 }
