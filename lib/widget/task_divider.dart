@@ -13,7 +13,7 @@ class TaskDivider extends StatelessWidget {
           Container(
             decoration: BoxDecoration(color: BaseColor.greyCCCCCC),
             height: 0.8,
-            width: 120,
+            width: 100,
           ),
           Padding(
             padding: EdgeInsets.only(left: 10, right: 10),
@@ -27,7 +27,7 @@ class TaskDivider extends StatelessWidget {
           Container(
             decoration: BoxDecoration(color: BaseColor.greyCCCCCC),
             height: 0.8,
-            width: 120,
+            width: 100,
           )
         ]);
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tomato_work/theme/color.dart';
 
@@ -19,6 +20,8 @@ class TimeCounterController extends State<TimeCounter> {
   static final int statusNotStart = 0;
   static final int statusWorking = 1;
   static final int statusRest = 2;
+
+  static const _platform = const MethodChannel('tickService');
 
   /// 一个番茄时间,分钟
   int tomatoDuration;
@@ -42,58 +45,112 @@ class TimeCounterController extends State<TimeCounter> {
 
   String _statusShowStr = "未开始";
 
-  DateTime _curTime;
-
-  Duration _duration = Duration(seconds: -1);
-
-  Timer _timer;
-
   ///倒计时显示的字符串
   String showTime;
 
   /// 背景色
   Color backgroundColor = BaseColor.green65C6A6;
 
-  TimeCounterController({
-    this.tomatoDuration = 25,
-    this.restDuration = 5,
-    this.onRestFinishCallback,
-    this.onWorkFinishCallback,
-    this.onWorkInvalidCallback,
-    this.onRestStartCallback,
-    this.onWorkStartCallback
-  }) {
+  TimeCounterController(
+      {this.tomatoDuration = 25,
+      this.restDuration = 5,
+      this.onRestFinishCallback,
+      this.onWorkFinishCallback,
+      this.onWorkInvalidCallback,
+      this.onRestStartCallback,
+      this.onWorkStartCallback}) {
     if (tomatoDuration < 0 || restDuration < 0) {
       throw "tomatoDuration or restDuration can not small than zero";
     }
-    _curTime = DateTime.parse("2012-12-12 00:00:00");
-    _curTime = _curTime.add(Duration(minutes: tomatoDuration));
-    showTime = getTimeStr();
-  }
+    showTime = getDefaultTimer();
 
-  ///开始计时,[needTime]是需要倒计时的时间，分钟计算
-  void _startCount(int needTime, CountFinishCallback callback) {
-    //首先重置当前时间
-    _curTime = DateTime.parse("2012-12-12 00:00:00");
-    _curTime = _curTime.add(Duration(minutes: needTime));
-
-    var duration = Duration(seconds: 1);
-    _timer = Timer.periodic(duration, (timer) {
-      _curTime = _curTime.add(_duration);
-      showTime = getTimeStr();
-      print(showTime);
-      if (showTime == "00:00") {
-        callback();
-        timer.cancel();
+    _platform.setMethodCallHandler((handler) {
+      switch (handler.method) {
+        case "onWorkStart":
+          print("接收 android 回调 onWorkStart");
+          onWorkStart();
+          break;
+        case "onWorkEnd":
+          print(" 接收 android 回调 onWorkEnd");
+          onWorkEnd();
+          break;
+        case "onCancel":
+          print("接收 android 回调 onWorkCancel");
+          if(_status == statusWorking) {
+            onWorkInvalid();
+          }else{
+            _reset();
+          }
+          break;
+        case "onRestStart":
+          print("接收 android 回调 onRestStart");
+          onRestStart();
+          break;
+        case "onRestEnd":
+          print("接收 android 回调 onRestEnd");
+          onRestEnd();
+          break;
+        case "update":
+          Map<dynamic, dynamic> args = handler.arguments;
+          String timeStr = args["timeStr"];
+          bool isWork = args["isWork"] == "true" ? true : false;
+          update(timeStr, isWork);
+          break;
       }
-      setState(() {});
+      return;
     });
   }
 
+  void update(String timeStr, bool isWork) {
+    if (isWork) {
+      _switchStatus(statusWorking);
+    } else {
+      _switchStatus(statusRest);
+    }
+    setState(() {
+      showTime = timeStr;
+    });
+  }
+
+  void onWorkStart() {
+    setState(() {
+      _switchStatus(statusWorking);
+    });
+    if (onWorkStartCallback != null) {
+      onWorkStartCallback();
+    }
+  }
+
+  void onWorkEnd() {
+    _startRest();
+    if (onWorkFinishCallback != null) {
+      onWorkFinishCallback();
+    }
+  }
+
+  void onWorkInvalid() {
+    _reset();
+    if (onWorkInvalidCallback != null) {
+      onWorkInvalidCallback();
+    }
+  }
+
+  void onRestStart() {
+    _switchStatus(statusRest);
+    if (onRestStartCallback != null) {
+      onRestStartCallback();
+    }
+  }
+
+  void onRestEnd() {
+    if (onRestFinishCallback != null) {
+      onRestFinishCallback();
+    }
+  }
+
   void _reset() {
-    _curTime = DateTime.parse("2012-12-12 00:00:00");
-    _curTime = _curTime.add(Duration(minutes: tomatoDuration));
-    showTime = getTimeStr();
+    showTime = getDefaultTimer();
+    _switchStatus(statusNotStart);
   }
 
   void _switchStatus(int status) {
@@ -114,60 +171,33 @@ class TimeCounterController extends State<TimeCounter> {
 
   //开始进入休息时间
   void _startRest() {
-    _switchStatus(statusRest);
-    if(onRestStartCallback != null){
-      onRestStartCallback();
-    }
-    print("开始进行休息区间计时");
-    _startCount(restDuration, () {
-      if (onRestFinishCallback != null) {
-        onRestFinishCallback();
-      }
-      start();
-    });
+    _platform.invokeMethod("startRest", {"restTime":restDuration});
   }
 
   void start() {
-    _switchStatus(statusWorking);
-    if(onWorkStartCallback != null){
-      onWorkStartCallback();
-    }
-    _startCount(tomatoDuration, () {
-      if (onWorkFinishCallback != null) {
-        onWorkFinishCallback();
-      }
-      _startRest();
-    });
+    _platform.invokeMethod("startWork", {"tomatoTime":tomatoDuration});
   }
 
   void cancel() {
-    print("call cancel");
-    _reset();
-    _switchStatus(statusNotStart);
-    if (_timer != null) {
-      _timer.cancel();
-    }
-    setState(() {});
+    _platform.invokeMethod("cancel", []);
   }
 
   /// 获取当前倒计时的时间
-  String getTimeStr() {
+  String getDefaultTimer() {
+    var _curTime = DateTime.parse("2012-12-12 00:00:00");
+    _curTime = _curTime.add(Duration(minutes: tomatoDuration));
     return '${_curTime.minute.toString().padLeft(2, '0')}:${_curTime.second.toString().padLeft(2, '0')}';
   }
 
   @override
   void dispose() {
     super.dispose();
-    if (_timer != null) {
-      _timer.cancel();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
         onLongPress: () {
-          print("on long press");
           if (_status == statusNotStart) {
             start();
           } else if (_status == statusWorking) {

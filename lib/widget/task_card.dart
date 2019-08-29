@@ -7,16 +7,14 @@ import 'package:tomato_work/data/model/db_model.dart';
 import 'package:tomato_work/theme/color.dart';
 
 class TaskCard extends StatefulWidget {
-  TaskInfo _taskInfo;
+  TaskInfo taskInfo;
 
-  TaskCard(this._taskInfo);
+  TaskCard({Key key,this.taskInfo}):super(key:key);
 
-  @override
-  Widget build(BuildContext context) {}
 
   @override
   State<StatefulWidget> createState() {
-    return TaskCardState(_taskInfo);
+    return TaskCardState(taskInfo);
   }
 }
 
@@ -131,7 +129,6 @@ class TaskCardState extends State<TaskCard> {
   }
 
   void _finishTask() async {
-    print("finish ");
     DbUtils dbUtils = Provider.of<DbUtils>(context);
     taskInfo.realDuration =
         (DateTime.now().millisecondsSinceEpoch - taskInfo.startTime) ~/

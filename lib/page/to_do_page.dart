@@ -19,8 +19,8 @@ class ToDoPage extends StatefulWidget {
 
 class ToDoState extends State<ToDoPage> with AutomaticKeepAliveClientMixin {
   TimeCounterController _timeCounterController = TimeCounterController(
-    tomatoDuration: 25,
-    restDuration: 5,
+    tomatoDuration: 1,
+    restDuration: 1,
   );
 
   bool _hasQuery = false;
@@ -59,14 +59,21 @@ class ToDoState extends State<ToDoPage> with AutomaticKeepAliveClientMixin {
                   //+1是因为有一条分割栏目
                   itemBuilder: (BuildContext context, int index) {
                     Widget item;
+                    TaskInfo curInfo;
                     if (index < notFinishTasks.length) {
-                      item = TaskCard(notFinishTasks[index]);
+                      curInfo = notFinishTasks[index];
+                      item = TaskCard(
+                          key: ObjectKey(curInfo.id), taskInfo: curInfo);
                     } else if (index == notFinishTasks.length) {
                       //分割栏目
                       item = TaskDivider();
                     } else {
+                      curInfo =
+                          finishedTasks[index - notFinishTasks.length - 1];
                       item = TaskCard(
-                          finishedTasks[index - notFinishTasks.length - 1]);
+                        key: ObjectKey(curInfo.id),
+                        taskInfo: curInfo,
+                      );
                     }
                     return Container(
                       padding: EdgeInsets.fromLTRB(10, 15, 10, 0),

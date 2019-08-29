@@ -7,7 +7,6 @@ class DbUtils {
   Database database;
 
   _init() async {
-    print(" dbutils created");
     database = await openDatabase(
         join(await getDatabasesPath(), 'tomato_work.db'),
         version: 1, onCreate: (db, version) async {

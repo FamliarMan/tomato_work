@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_name">计时</string>
+    <string name="channel_desc">这个是用来展示计时信息的</string>
+    <string name="notification_content_work">工作中：%s</string>
+    <string name="notification_content_rest">休息中：%s</string>
+    <string name="notification_content_default">您正在使用番茄工作法管理时间！</string>
+
+</resources>
